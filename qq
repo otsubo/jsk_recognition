@@ -1,0 +1,40 @@
+[1mdiff --cc jsk_pcl_ros/src/extract_indices_nodelet.cpp[m
+[1mindex 5adfccb,13cf647..0000000[m
+[1m--- a/jsk_pcl_ros/src/extract_indices_nodelet.cpp[m
+[1m+++ b/jsk_pcl_ros/src/extract_indices_nodelet.cpp[m
+[36m@@@ -94,14 -94,18 +94,26 @@@[m [mnamespace jsk_pcl_ro[m
+      extract.setIndices(indices);[m
+      extract.setKeepOrganized(keep_organized_);[m
+      extract.setNegative(negative_);[m
+[31m -    pcl::PointCloud<PointT>::Ptr output(new pcl::PointCloud<PointT>());[m
+[31m -    extract.filter(*output);[m
+[32m +    pcl::PCLPointCloud2 output;[m
+[32m +    extract.filter(output);[m
+  [m
+[32m++<<<<<<< Updated upstream[m
+[32m +    sensor_msgs::PointCloud2 out_cloud_msg;[m
+[32m +    pcl_conversions::moveFromPCL(output, out_cloud_msg);[m
+[32m +[m
+[32m +    out_cloud_msg.header = cloud_msg->header;[m
+[32m +    pub_.publish(out_cloud_msg);[m
+[32m++=======[m
+[32m+     pcl::PointCloud<PointT>::Ptr prev_output(new pcl::PointCloud<PointT>());[m
+[32m+     pcl::PointCloud<PointT>::Ptr point_diff(new pcl::PointCloud<PointT>());[m
+[32m+ [m
+[32m+     if(prev_output){[m
+[32m+       for(int i = 0, [m
+[32m+     sensor_msgs::PointCloud2::Ptr out_cloud(new sensor_msgs::PointCloud2);[m
+[32m+     pcl::toROSMsg(*output, *out_cloud);[m
+[32m+     out_cloud->header = cloud_msg->header;[m
+[32m+     pub_.publish(out_cloud);[m
+[32m++>>>>>>> Stashed changes[m
+    }[m
+  }[m
+  [m
+[1mdiff --git a/.travis b/.travis[m
+[1mindex 38a9072..6206c51 160000[m
+[1m--- a/.travis[m
+[1m+++ b/.travis[m
+[36m@@ -1 +1 @@[m
+[31m-Subproject commit 38a90723016599b528f13d6699cac402420101ca[m
+[32m+[m[32mSubproject commit 6206c51d6d369853fbed9a87a2ea73a0ba370d93[m
