@@ -86,6 +86,9 @@
   <class name="jsk_perception/AddMaskImage" type="jsk_perception::AddMaskImage"
          base_class_type="nodelet::Nodelet">
   </class>
+  <class name="jsk_perception/MaskedImageGenerator" type="jsk_perception::MaskedImageGenerator"
+         base_class_type="nodelet::Nodelet">
+  </class>
   <class name="jsk_perception/MultiplyMaskImage"
          type="jsk_perception::MultiplyMaskImage"
          base_class_type="nodelet::Nodelet">
@@ -153,31 +156,31 @@
       compute superpixels
     </description>
   </class>
-  <class name="jsk_perception/HoughCircleDetector" type="jsk_perception::HoughCircleDetector"
+  <class name="jsk_perception/HoughCircleDetector" type="HoughCircleDetector"
          base_class_type="nodelet::Nodelet">
     <description>
       nodelet to detect circles based on hough transformation
     </description>
   </class>
-  <class name="jsk_perception/ColorHistogram" type="jsk_perception::ColorHistogram"
+  <class name="jsk_perception/ColorHistogram" type="ColorHistogram"
          base_class_type="nodelet::Nodelet">
     <description>
       Nodelet to compute histogram
     </description>
   </class>
-  <class name="jsk_perception/EdgeDetector" type="jsk_perception::EdgeDetector"
+  <class name="jsk_perception/EdgeDetector" type="EdgeDetector"
          base_class_type="nodelet::Nodelet">
     <description>
       Nodelet to detect edges
     </description>
   </class>
-  <class name="jsk_perception/SparseImageEncoder" type="jsk_perception::SparseImageEncoder"
+  <class name="jsk_perception/SparseImageEncoder" type="SparseImageEncoder"
          base_class_type="nodelet::Nodelet">
     <description>
       Nodelet to encode image to an array of sparse matrix.
     </description>
   </class>
-  <class name="jsk_perception/SparseImageDecoder" type="jsk_perception::SparseImageDecoder"
+  <class name="jsk_perception/SparseImageDecoder" type="SparseImageDecoder"
          base_class_type="nodelet::Nodelet">
     <description>
       Nodelet to decode from an array of sparse matrix to image.

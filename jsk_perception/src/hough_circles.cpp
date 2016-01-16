@@ -151,4 +151,5 @@ namespace jsk_perception
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(jsk_perception::HoughCircleDetector, nodelet::Nodelet);
+typedef jsk_perception::HoughCircleDetector HoughCircleDetector;
+PLUGINLIB_DECLARE_CLASS (jsk_perception, HoughCircleDetector, HoughCircleDetector, nodelet::Nodelet);

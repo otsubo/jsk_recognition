@@ -49,6 +49,7 @@ namespace jsk_perception
     pub_r_ = advertise<sensor_msgs::Image>(*pnh_, "output/red", 1);
     pub_g_ = advertise<sensor_msgs::Image>(*pnh_, "output/green", 1);
     pub_b_ = advertise<sensor_msgs::Image>(*pnh_, "output/blue", 1);
+    pub_filtered_image_ = advertise<sensor_msgs::Image>(*pnh_, "output/filtered_image", 1);
     onInitPostProcess();
   }
 
@@ -77,11 +78,43 @@ namespace jsk_perception
     if (image_msg->encoding == sensor_msgs::image_encodings::RGB8) {
       cv::cvtColor(image, image, CV_RGB2BGR);
     }
+
     std::vector<cv::Mat> bgr_planes;
     cv::split(image, bgr_planes);
     cv::Mat red = bgr_planes[2];
     cv::Mat blue = bgr_planes[0];
     cv::Mat green = bgr_planes[1];
+    cv::Mat red_th;
+    cv::Mat blue_th;
+    cv::Mat green_th;
+    cv::Mat red_tmp;
+    //cv::Mat blue_tmp;
+    //cv::Mat green_tmp;
+    cv::Mat mask_image;
+    cv::Mat filtered_image;
+    //red max
+    cv::threshold(red, red_tmp,135, 0, cv::THRESH_TOZERO_INV);
+    //red minimum
+    cv::threshold(red_tmp, red_th,5, 0, cv::THRESH_TOZERO);
+    //blue max
+    cv::threshold(blue, blue_th,45, 0, cv::THRESH_TOZERO_INV);
+    //blue minimum
+    //cv::threshold(blue_tmp, blue_th,45, 0, cv::THRESH_TOZERO);
+    //green max
+    cv::threshold(green, green_th,45, 255, cv::THRESH_BINARY);
+    //green minimum
+    //cv::threshold(green, green_th,150, 255, cv::THRESH_BINARY);
+
+    cv::bitwise_and(red_th, green_th, mask_image);
+    cv::bitwise_and(mask_image, blue_th, mask_image);
+    cv::bitwise_and(image , image, filtered_image, mask_image);
+    cv::threshold(filtered_image, filtered_image, 0, 255, cv::THRESH_BINARY);
+    //image.copyTo(out_image);
+    //image.copyTo(test_image);
+
+    
+    //cv::threshold(green,rest_image,200,250,cv::THRESH_TOZERO);
+    //colorExtraction(&test_image, &out_image, CV_BGR2HSV, 150, 165, 100, 255, 70, 255);
     pub_r_.publish(cv_bridge::CvImage(
                      image_msg->header,
                      sensor_msgs::image_encodings::MONO8,
@@ -94,6 +127,10 @@ namespace jsk_perception
                      image_msg->header,
                      sensor_msgs::image_encodings::MONO8,
                      blue).toImageMsg());
+    pub_filtered_image_.publish(cv_bridge::CvImage(
+                                                   image_msg->header,
+                                                   sensor_msgs::image_encodings::MONO8,
+                                                   filtered_image).toImageMsg());
   }
 }
 

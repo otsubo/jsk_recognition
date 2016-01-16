@@ -56,6 +56,7 @@ namespace jsk_perception
     ros::Publisher pub_r_;
     ros::Publisher pub_g_;
     ros::Publisher pub_b_;
+    ros::Publisher pub_filtered_image_;
   private:
     
   };

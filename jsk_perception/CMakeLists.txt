@@ -9,41 +9,19 @@ if(CCACHE_FOUND)
 endif(CCACHE_FOUND)
 
 find_package(catkin REQUIRED COMPONENTS
-  angles
-  cmake_modules
-  cv_bridge
-  driver_base
-  dynamic_reconfigure
-  geometry_msgs
-  image_geometry
-  image_transport
-  image_view2
   jsk_recognition_msgs
+  mk message_generation std_msgs sensor_msgs geometry_msgs cv_bridge
+  image_geometry image_transport image_view2 driver_base dynamic_reconfigure cmake_modules
+  roscpp nodelet tf rospack
+  jsk_topic_tools pcl_ros
   jsk_recognition_utils
-  jsk_topic_tools
-  message_generation
-  mk
-  nodelet
-  pcl_ros
-  posedetection_msgs
-  rosbuild
-  roscpp
-  roseus
-  rospack
-  sensor_msgs
-  std_msgs
-  tf
-)
+  )
 
-# check ros distro >= indigo
-execute_process(
-  COMMAND python -c "import sys; sys.exit(ord('$ENV{ROS_DISTRO}'[0]) >= ord('indigo'[0]))"
-  RESULT_VARIABLE DISTRO_GE_INDIGO
-)
-if(DISTRO_GE_INDIGO)
-  # robot_self_filter is released on version greater than indigo
-  find_package(robot_self_filter)
-endif()
+find_package(OpenCV 2 REQUIRED)
+message(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+message("${OpenCV_VERSION}")
+message("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+
 
 find_package(Boost REQUIRED COMPONENTS filesystem system signals)
 
@@ -163,6 +141,7 @@ jsk_perception_nodelet(src/unapply_mask_image.cpp "jsk_perception/UnapplyMaskIma
 jsk_perception_nodelet(src/single_channel_histogram.cpp "jsk_perception/SingleChannelHistogram" "single_channel_histogram")
 jsk_perception_nodelet(src/blob_detector.cpp "jsk_perception/BlobDetector" "blob_detector")
 jsk_perception_nodelet(src/add_mask_image.cpp "jsk_perception/AddMaskImage" "add_mask_image")
+jsk_perception_nodelet(src/masked_image_generator.cpp "jsk_perception/MaskedImageGenerator" "masked_image_generator")
 jsk_perception_nodelet(src/multiply_mask_image.cpp "jsk_perception/MultiplyMaskImage" "multiply_mask_image")
 jsk_perception_nodelet(src/morphological_operator.cpp "jsk_perception/ErodeMaskImage" "erode_mask_image")
 jsk_perception_nodelet(src/morphological_operator.cpp "jsk_perception/DilateMaskImage" "dilate_mask_image")
@@ -266,10 +245,12 @@ install(FILES jsk_perception_nodelets.xml DESTINATION ${CATKIN_PACKAGE_SHARE_DES
 
 if(CATKIN_ENABLE_TESTING)
   find_package(roslint REQUIRED)
-  set(ROSLINT_CPP_OPTS "--filter=-whitespace/parens,-whitespace/braces")
-  roslint_cpp()
   roslint_python()
   find_package(rostest REQUIRED)
+  # check ros distro >= indigo
+  execute_process(
+    COMMAND python -c "import sys; sys.exit(ord('$ENV{ROS_DISTRO}'[0]) >= ord('indigo'[0]))"
+    RESULT_VARIABLE DISTRO_GE_INDIGO)
   if(${DISTRO_GE_INDIGO})
     # FIXME: jsk_tools/test_topic_published.py does not work on hydro travis/jenkins
     # https://github.com/jsk-ros-pkg/jsk_common/pull/1293#issuecomment-164158260
