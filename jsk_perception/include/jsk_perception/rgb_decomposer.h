@@ -39,6 +39,8 @@
 
 #include <jsk_topic_tools/diagnostic_nodelet.h>
 #include <sensor_msgs/Image.h>
+#include <nodelet/nodelet.h>
+#include <dynamic_reconfigure/server.h>
 
 namespace jsk_perception
 {

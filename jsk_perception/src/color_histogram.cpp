@@ -85,7 +85,7 @@ namespace jsk_perception
       it_.reset(new image_transport::ImageTransport(nh_));
       image_sub_.subscribe(*it_, "", 1);
       rectangle_sub_.subscribe(nh_, "screenrectangle", 1);
-      names.push_back("screenrectangle");
+      names.push_back("image/screenrectangle");
       sync_
         = boost::make_shared<message_filters::Synchronizer<SyncPolicy> >(10);
       sync_->connectInput(image_sub_, rectangle_sub_);
