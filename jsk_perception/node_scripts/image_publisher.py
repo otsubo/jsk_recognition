@@ -38,7 +38,7 @@ class ImagePublisher(object):
     def publish(self):
         now = rospy.Time.now()
         bridge = cv_bridge.CvBridge()
-        img_bgr = cv2.imread(self.file_name)
+        img_bgr = cv2.imread('tomato5.jpg')
         if img_bgr is None:
             jsk_logwarn('cannot read the image at {}'
                         .format(self.file_name))

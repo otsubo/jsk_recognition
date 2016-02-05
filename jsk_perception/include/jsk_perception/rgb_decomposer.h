@@ -39,7 +39,12 @@
 
 #include <jsk_topic_tools/diagnostic_nodelet.h>
 #include <sensor_msgs/Image.h>
+<<<<<<< HEAD
 #include <sensor_msgs/CameraInfo.h>
+=======
+#include <nodelet/nodelet.h>
+#include <dynamic_reconfigure/server.h>
+>>>>>>> 996c5c6c8c1e9b7c5ad60b88b977b7423d163699
 
 namespace jsk_perception
 {

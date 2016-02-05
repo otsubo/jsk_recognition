@@ -150,11 +150,21 @@
          type="jsk_pcl_ros_utils::PlaneConcatenator"
          base_class_type="nodelet::Nodelet">
   </class>
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+  <class name="jsk_pcl/PointCloudToSTL" type="jsk_pcl_ros::PointCloudToSTL"
+=======
+>>>>>>> 996c5c6c8c1e9b7c5ad60b88b977b7423d163699
   <class name="jsk_pcl/PointCloudToClusterPointIndices"
          type="jsk_pcl_ros_utils::PointCloudToClusterPointIndices"
          base_class_type="nodelet::Nodelet">
   </class>
   <class name="jsk_pcl/PointCloudToSTL" type="jsk_pcl_ros_utils::PointCloudToSTL"
+<<<<<<< HEAD
+=======
+>>>>>>> 9edcefb7d6f42b99d28624aec16ad393d5897304
+>>>>>>> 996c5c6c8c1e9b7c5ad60b88b977b7423d163699
          base_class_type="nodelet::Nodelet">
     <description>
     </description>

@@ -1,0 +1,129 @@
+<launch>
+  <!-- <node pkg="uvc_camera" type="uvc_camera_node" name="camera" /> -->
+  <arg name="INPUT_IMAGE" default="/camera/rgb/image_raw"/>
+  <arg name="INPUT_INFO" default="/camera/rgb/camera_info"/>
+  <arg name="DEFAULT_NAMESPACE" default="stem_segmentation"/>
+
+  <node pkg="image_view2" type="image_view2" name="image_view2">
+    <remap from="image" to="$(arg INPUT_IMAGE)" />
+  </node>
+  <node pkg="jsk_perception" type="slic_super_pixels" name="super_pixels"
+        respawn="true">
+    <remap from="image" to="$(arg INPUT_IMAGE)"/>
+  </node>
+  <node pkg="image_view" type="image_view" name="super_pixels_view">
+    <remap from="image" to="super_pixels/debug" />
+  </node>
+  <node pkg="jsk_perception" type="hsv_decomposer" name="hsv_decomposer">
+    <remap from="~input" to="$(arg INPUT_IMAGE)" />
+  </node>
+  <node pkg="jsk_perception" type="rect_to_mask_image" name="rect_to_mask_image">
+    <remap from="~input" to="$(arg INPUT_IMAGE)/screenrectangle" />
+    <remap from="~input/camera_info" to="$(arg INPUT_INFO)" />
+  </node>
+  <node pkg="jsk_perception" type="single_channel_histogram" name="reference_hue_histogram">
+    <rosparam>
+      use_mask: true
+      hist_size: 100
+    </rosparam>
+    <remap from="~input" to="hsv_decomposer/output/hue" />
+    <remap from="~input/mask" to="rect_to_mask_image/output" />
+  </node>
+  <node pkg="image_view" type="image_view" name="mask_view">
+    <remap from="image" to="rect_to_mask_image/output" />
+  </node>
+  <node pkg="jsk_perception" type="color_histogram_label_match" name="color_histogram_label_match">
+    <remap from="~input" to="hsv_decomposer/output/hue" />
+    <remap from="~input/label" to="super_pixels/output" />
+    <remap from="~input/mask" to="rect_to_mask_image/output"/>
+    <remap from="~input/histogram" to="reference_hue_histogram/output" />
+    <rosparam>
+      use_mask: false
+      threshold_method: 2
+    </rosparam>
+  </node>
+  <node pkg="image_view" type="image_view" name="coef_view">
+    <remap from="image" to="color_histogram_label_match/output/coefficient_image" />
+  </node>
+  <node pkg="image_view" type="image_view" name="region_view">
+    <remap from="image" to="color_histogram_label_match/output/extracted_region" />
+  </node>
+
+  <node pkg="jsk_perception" type="closing" name="closing">
+    <remap from="~input" to="color_histogram_label_match/output/extracted_region"/>
+    <rosparam>
+      size: 3
+      iterations: 7
+    </rosparam>
+  </node>
+
+  <node pkg="jsk_perception" type="apply_mask_image" name="apply_mask_image">
+    <remap from="~input" to="$(arg INPUT_IMAGE)" />
+    <remap from="~input/mask" to="closing/output" />
+    <rosparam>
+      clip: false
+    </rosparam>
+  </node>
+
+  <!-- <node pkg="jsk_perception" type="rgb_decomposer" name="rgb_decomposer"> -->
+  <!--   <remap from="~input" to="apply_mask_image/output" /> -->
+  <!-- </node> -->
+  
+  <!-- <node pkg="jsk_perception" type="closing" name="stem_closing"> -->
+  <!--   <remap from="~input" to="rgb_decomposer/output/filtered_image" /> -->
+  <!-- </node> -->
+
+  <node pkg="image_view2" type="image_view2" name="image_view2_stem">
+    <remap from="image" to="apply_mask_image/output" />
+  </node>
+  <node pkg="jsk_perception" type="slic_super_pixels" name="super_pixels_stem"
+        respawn="true">
+    <remap from="image" to="apply_mask_image/output"/>
+  </node>
+  <node pkg="image_view" type="image_view" name="super_pixels_view_stem">
+    <remap from="image" to="super_pixels/debug" />
+  </node>
+  <node pkg="jsk_perception" type="hsv_decomposer" name="hsv_decomposer_stem">
+    <remap from="~input" to="apply_mask_image/output" />
+  </node>
+  <node pkg="jsk_perception" type="rect_to_mask_image" name="rect_to_mask_image_stem">
+    <remap from="~input" to="apply_mask_image/output/screenrectangle" />
+    <remap from="~input/camera_info" to="$(arg INPUT_INFO)" />
+  </node>
+  <node pkg="jsk_perception" type="single_channel_histogram" name="reference_hue_histogram_stem">
+    <rosparam>
+      use_mask: true
+      hist_size: 100
+    </rosparam>
+    <remap from="~input" to="hsv_decomposer_stem/output/hue" />
+    <remap from="~input/mask" to="rect_to_mask_image_stem/output" />
+  </node>
+  <node pkg="image_view" type="image_view" name="mask_view_stem">
+    <remap from="image" to="rect_to_mask_image_stem/output" />
+  </node>
+  <node pkg="jsk_perception" type="color_histogram_label_match" name="color_histogram_label_match_stem">
+    <remap from="~input" to="hsv_decomposer_stem/output/hue" />
+    <remap from="~input/label" to="super_pixels_stem/output" />
+    <remap from="~input/mask" to="rect_to_mask_image_stem/output"/>
+    <remap from="~input/histogram" to="reference_hue_histogram_stem/output" />
+    <rosparam>
+      use_mask: false
+      threshold_method: 2
+    </rosparam>
+  </node>
+  <node pkg="image_view" type="image_view" name="coef_view_stem">
+    <remap from="image" to="color_histogram_label_match_stem/output/coefficient_image" />
+  </node>
+  <node pkg="image_view" type="image_view" name="region_view_stem">
+    <remap from="image" to="color_histogram_label_match_stem/output/extracted_region" />
+  </node>
+
+    <node pkg="jsk_perception" type="closing" name="closing_stem">
+    <remap from="~input" to="color_histogram_label_match_stem/output/extracted_region"/>
+    <rosparam>
+      size: 1
+      iterations: 7
+    </rosparam>
+  </node>
+
+</launch>

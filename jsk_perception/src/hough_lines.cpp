@@ -7,7 +7,7 @@
 #include <sensor_msgs/image_encodings.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include "opencv2/highgui/highgui.hpp"
-
+#include <math.h>
 #include <dynamic_reconfigure/server.h>
 
 namespace enc = sensor_msgs::image_encodings;
@@ -77,12 +77,13 @@ class HoughLines
                 out_lines.lines.resize(lines.size());
                 for( size_t i = 0; i < lines.size(); i++ )
                     {
-                        out_lines.lines[i].x1 = lines[i][0];
-                        out_lines.lines[i].y1 = lines[i][1];
-                        out_lines.lines[i].x2 = lines[i][2];
-                        out_lines.lines[i].y2 = lines[i][3];
-                        cv::line( out_image, cv::Point(lines[i][0], lines[i][1]),
-                                  cv::Point(lines[i][2], lines[i][3]), cv::Scalar(255,0,0), 3, 8 );
+                      out_lines.lines[i].x1 = lines[i][0];
+                      out_lines.lines[i].y1 = lines[i][1];
+                      out_lines.lines[i].x2 = lines[i][2];
+                      out_lines.lines[i].y2 = lines[i][3];
+                      out_lines.lines[i].a = atan2(lines[i][3] - lines[i][1] ,lines[i][2] - lines[i][0]);
+                      cv::line( out_image, cv::Point(lines[i][0], lines[i][1]),
+                                cv::Point(lines[i][2], lines[i][3]), cv::Scalar(255,0,0), 3, 8 );
                     }
 #else
                 std::vector<cv::Vec2f> lines;
