@@ -39,6 +39,7 @@
 
 #include <jsk_topic_tools/diagnostic_nodelet.h>
 #include <sensor_msgs/Image.h>
+#include <sensor_msgs/CameraInfo.h>
 
 namespace jsk_perception
 {
@@ -52,10 +53,17 @@ namespace jsk_perception
     virtual void unsubscribe();
     virtual void decompose(
       const sensor_msgs::Image::ConstPtr& image_msg);
+    virtual void infoCallback(
+                              const sensor_msgs::CameraInfo::ConstPtr& info_msg);
+    boost::mutex mutex_;
     ros::Subscriber sub_;
+    ros::Subscriber sub_info_;
     ros::Publisher pub_r_;
     ros::Publisher pub_g_;
     ros::Publisher pub_b_;
+    ros::Publisher pub_resize;
+    ros::Publisher pub_info;
+    sensor_msgs::CameraInfo::ConstPtr latest_camera_info_;
   private:
     
   };

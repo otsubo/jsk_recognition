@@ -49,20 +49,33 @@ namespace jsk_perception
     pub_r_ = advertise<sensor_msgs::Image>(*pnh_, "output/red", 1);
     pub_g_ = advertise<sensor_msgs::Image>(*pnh_, "output/green", 1);
     pub_b_ = advertise<sensor_msgs::Image>(*pnh_, "output/blue", 1);
+    pub_resize = advertise<sensor_msgs::Image>(*pnh_, "output/resize", 1);
+    pub_info = advertise<sensor_msgs::CameraInfo>(*pnh_,"output/camera_info", 1);
     onInitPostProcess();
   }
 
   void RGBDecomposer::subscribe()
   {
     sub_ = pnh_->subscribe("input", 1, &RGBDecomposer::decompose, this);
-    ros::V_string names = boost::assign::list_of("~input");
+    sub_info_ = pnh_->subscribe("input/camera_info",1, &RGBDecomposer::infoCallback, this);
+    ros::V_string names = boost::assign::list_of("~input")("~input/camera_info");
     jsk_topic_tools::warnNoRemap(names);
   }
 
   void RGBDecomposer::unsubscribe()
   {
     sub_.shutdown();
+    sub_info_.shutdown();
+
   }
+
+  void RGBDecomposer::infoCallback(
+                                   const sensor_msgs::CameraInfo::ConstPtr& info_msg)
+  {
+    boost::mutex::scoped_lock lock(mutex_);
+    latest_camera_info_ = info_msg;
+  }
+
 
   void RGBDecomposer::decompose(
     const sensor_msgs::Image::ConstPtr& image_msg)
@@ -82,6 +95,14 @@ namespace jsk_perception
     cv::Mat red = bgr_planes[2];
     cv::Mat blue = bgr_planes[0];
     cv::Mat green = bgr_planes[1];
+
+    cv::Mat resize_img(image,cv::Rect(0,0,640,480));
+
+    sensor_msgs::CameraInfo camera_info(*latest_camera_info_);
+    camera_info.height = 480;
+    camera_info.width = 640;
+
+
     pub_r_.publish(cv_bridge::CvImage(
                      image_msg->header,
                      sensor_msgs::image_encodings::MONO8,
@@ -94,6 +115,11 @@ namespace jsk_perception
                      image_msg->header,
                      sensor_msgs::image_encodings::MONO8,
                      blue).toImageMsg());
+    pub_resize.publish(cv_bridge::CvImage(
+                                          image_msg->header,
+                                          sensor_msgs::image_encodings::BGR8,
+                                          resize_img).toImageMsg());
+    pub_info.publish(camera_info);
   }
 }
 
