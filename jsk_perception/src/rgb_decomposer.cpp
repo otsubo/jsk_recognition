@@ -50,19 +50,30 @@ namespace jsk_perception
     pub_g_ = advertise<sensor_msgs::Image>(*pnh_, "output/green", 1);
     pub_b_ = advertise<sensor_msgs::Image>(*pnh_, "output/blue", 1);
     pub_filtered_image_ = advertise<sensor_msgs::Image>(*pnh_, "output/filtered_image", 1);
+    pub_resize = advertise<sensor_msgs::Image>(*pnh_, "output/resize", 1);
+    pub_info = advertise<sensor_msgs::CameraInfo>(*pnh_,"output/camera_info", 1);
     onInitPostProcess();
   }
 
   void RGBDecomposer::subscribe()
   {
     sub_ = pnh_->subscribe("input", 1, &RGBDecomposer::decompose, this);
-    ros::V_string names = boost::assign::list_of("~input");
+    sub_info_ = pnh_->subscribe("input/camera_info",1, &RGBDecomposer::infoCallback, this);
+    ros::V_string names = boost::assign::list_of("~input")("input/camera_info");
     jsk_topic_tools::warnNoRemap(names);
   }
 
   void RGBDecomposer::unsubscribe()
   {
     sub_.shutdown();
+    sub_info_.shutdown();
+  }
+
+  void RGBDecomposer::infoCallback(
+    const sensor_msgs::CameraInfo::ConstPtr& info_msg)
+  {
+    boost::mutex::scoped_lock lock(mutex_);
+    latest_camera_info_ = info_msg;
   }
 
   void RGBDecomposer::decompose(
@@ -92,6 +103,7 @@ namespace jsk_perception
     //cv::Mat green_tmp;
     cv::Mat mask_image;
     cv::Mat filtered_image;
+    //cv::Mat resize_img;
     //red max
     cv::threshold(red, red_tmp,135, 0, cv::THRESH_TOZERO_INV);
     //red minimum
@@ -112,6 +124,15 @@ namespace jsk_perception
     //image.copyTo(out_image);
     //image.copyTo(test_image);
 
+    //resize_image
+    //cv::resize(image, resize_img, cv::Size(), 0.7, 0.7, cv::INTER_NEAREST);
+
+    cv::Mat resize_img(image,cv::Rect(0,0,640,480));
+
+    sensor_msgs::CameraInfo camera_info(*latest_camera_info_);
+    camera_info.height = 480;
+    camera_info.width = 640;
+
     
     //cv::threshold(green,rest_image,200,250,cv::THRESH_TOZERO);
     //colorExtraction(&test_image, &out_image, CV_BGR2HSV, 150, 165, 100, 255, 70, 255);
@@ -131,6 +152,11 @@ namespace jsk_perception
                                                    image_msg->header,
                                                    sensor_msgs::image_encodings::MONO8,
                                                    filtered_image).toImageMsg());
+    pub_resize.publish(cv_bridge::CvImage(
+                                          image_msg->header,
+                                          sensor_msgs::image_encodings::BGR8,
+                                          resize_img).toImageMsg());
+    pub_info.publish(camera_info);
   }
 }
 

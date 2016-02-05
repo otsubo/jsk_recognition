@@ -2,7 +2,7 @@
 <launch>
   <arg name="INPUT_IMAGE" default="/multisense/left/image_rect_color"/>
   <arg name="INPUT_CAMERA_INFO" default="/multisense/left/image_rect_color/camera_info"/>
-  <arg name="INPUT_POINT_CLOUD" default="/multisense/resize_1_2/points" />
+  <arg name="INPUT_POINT_CLOUD" default="/multisense/points" />
 
   <arg name="OUTPUT" default="rgb_output"/>
   <arg name="CENTROID_FRAME" default="target"/>
@@ -11,10 +11,10 @@
   <machine name="localhost" address="localhost"/>
   <arg name="MANAGER" default="rgb_filter_manager" />
 
-  <arg name="r_max" default="135" />
+  <arg name="r_max" default="90" />
   <arg name="r_min" default="5" />
   <arg name="g_max" default="204" />
-  <arg name="g_min" default="45" />
+  <arg name="g_min" default="50" />
   <arg name="b_max" default="45" />
   <arg name="b_min" default="0" />
 
@@ -110,16 +110,17 @@
       </rosparam>
     </node>
 
-    <node pkg="jsk_pcl_ros" type="centroid_publisher" name="centroid_publisher">
-      <remap from="~input" to="rgb_filter/output" />
-    </node>
+    <!-- <node pkg="jsk_pcl_ros" type="centroid_publisher" name="centroid_publisher"> -->
+    <!--   <remap from="~input" to="rgb_filter/output" /> -->
+    <!-- </node> -->
 
     <node pkg="nodelet" type="nodelet" name="euclidean_clustering"
           args="standalone jsk_pcl/EuclideanClustering $(arg manager)" output="screen">
       <remap from="~input" to="$(arg OUTPUT)" />
       <rosparam>
         tolerance: 0.002
-        min_size: 10
+        min_size: 20
+        max_size: 40
       </rosparam>
     </node>
 
@@ -127,7 +128,7 @@
           name="cluster_decomposer"
           args="standalone jsk_pcl/ClusterPointIndicesDecomposer $(arg manager)"
           output="screen" clear_params="true">
-      <remap from="~input" to="filtered_cloud/output" />
+      <remap from="~input" to="$(arg OUTPUT)" />
       <remap from="~target" to="euclidean_clustering/output" />
       <rosparam>
         approximate_sync: true
