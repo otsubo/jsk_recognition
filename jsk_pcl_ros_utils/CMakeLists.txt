@@ -65,7 +65,7 @@ ENDIF()
 # ------------------------------------------------------------------------------------
 
 # download and install sample data
-add_custom_target(install_sample_data ALL COMMAND ${PROJECT_SOURCE_DIR}/scripts/install_sample_data.py)
+add_custom_target(${PROJECT_NAME}_install_sample_data ALL COMMAND ${PROJECT_SOURCE_DIR}/scripts/install_sample_data.py --pkg-path ${PROJECT_SOURCE_DIR})
 
 # generate the dynamic_reconfigure config file
 generate_dynamic_reconfigure_options(
@@ -247,7 +247,8 @@ if (CATKIN_ENABLE_TESTING)
     # unexpected error
     add_rostest(test/point_indices_to_mask_image.test)
     # because of unreleased topic_tools/transform on hydro
-    add_rostest(test/pointcloud_to_pcd.test)
+    # TODO(iory): Fix this. (https://github.com/jsk-ros-pkg/jsk_recognition/issues/2339)
+    # add_rostest(test/pointcloud_to_pcd.test)
     add_rostest(test/pointcloud_to_point_indices.test)
     # because of unreleased jsk_tools/test_topic_published.py on hydro
     add_rostest(test/bounding_box_array_to_bounding_box.test)
