@@ -1,0 +1,41 @@
+<launch>
+
+  <arg name="INPUT_IMAGE" />
+  <arg name="INPUT_IMAGE2" />
+  <arg name="INPUT_IMAGE3" />
+  <arg name="INPUT_IMAGE4" />
+  <arg name="INPUT_MASK" />
+  <arg name="GPU" default="0" />
+  <arg name="USE_MASK" default="false" />
+
+  <arg name="required" default="false" />
+
+  <node name="fcn_object_segmentation_multi"
+        pkg="jsk_perception" type="fcn_multi_images.py"
+        output="screen"
+        required="$(arg required)">
+    <remap from="~input" to="$(arg INPUT_IMAGE)" />
+    <remap from="~input2" to="$(arg INPUT_IMAGE2)" />
+    <remap from="~input3" to="$(arg INPUT_IMAGE3)" />
+    <remap from="~input4" to="$(arg INPUT_IMAGE4)" />
+    <rosparam command="load" file="$(find jsk_perception)/config/folding_target_name.yaml" />
+    <rosparam subst_value="true">
+      gpu: $(arg GPU)
+      model_name: fcn8s
+      model_file: $(find jsk_perception)/trained_data/fcn8s_multi_images.npz
+      use_mask: $(arg USE_MASK)
+    </rosparam>
+  </node>
+
+  <node name="label_image_decomposer"
+        pkg="jsk_perception" type="label_image_decomposer.py"
+        required="$(arg required)">
+    <remap from="~input" to="$(arg INPUT_IMAGE)" />
+    <remap from="~input/label" to="fcn_object_segmentation_multi/output" />
+    <rosparam>
+      queue_size: 100
+    </rosparam>
+    <remap from="~label_names" to="fcn_object_segmentation_multi/target_names" />
+  </node>
+
+</launch>
