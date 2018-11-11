@@ -43,6 +43,13 @@ class FCNObjectSegmentation(ConnectionBasedTransport):
         self.pub_proba = self.advertise(
             '~output/proba_image', Image, queue_size=1)
 
+    def img_to_datum(self, img):
+        img = img.copy()
+        datum = img.astype(np.float32)
+        datum -= self.mean_bgr
+        datum = datum.transpose((2, 0, 1))
+        return datum
+
     def _load_model(self):
         if self.backend == 'chainer':
             self._load_chainer_model()
@@ -139,21 +146,36 @@ class FCNObjectSegmentation(ConnectionBasedTransport):
 
     def _cb_with_mask(self, img_msg, img_msg2, img_msg3, img_msg4):
         br = cv_bridge.CvBridge()
+        img = []
         img1 = br.imgmsg_to_cv2(img_msg, desired_encoding='bgr8')
         img2 = br.imgmsg_to_cv2(img_msg2, desired_encoding='bgr8')
         img3 = br.imgmsg_to_cv2(img_msg3, desired_encoding='bgr8')
         img4 = br.imgmsg_to_cv2(img_msg4, desired_encoding='bgr8')
-        img = np.vstack((img1, img2, img3, img4))
+        img1 = self.img_to_datum(img1)
+        img.append(img1)
+        img2 = self.img_to_datum(img2)
+        img.append(img2)
+        img3 = self.img_to_datum(img3)
+        img.append(img3)
+        img4 = self.img_to_datum(img4)
+        img.append(img4)
+        img = np.array(img)
         label, proba_img = self.segment(img)
-        label[mask == 0] = 0
-        proba_img[:, :, 0][mask == 0] = 1
-        proba_img[:, :, 1:][mask == 0] = 0
         label_msg = br.cv2_to_imgmsg(label.astype(np.int32), '32SC1')
         label_msg.header = img_msg.header
         self.pub.publish(label_msg)
         proba_msg = br.cv2_to_imgmsg(proba_img.astype(np.float32))
         proba_msg.header = img_msg.header
         self.pub_proba.publish(proba_msg)
+
+        # proba_img[:, :, 0][mask == 0] = 1
+        # proba_img[:, :, 1:][mask == 0] = 0
+        # label_msg = br.cv2_to_imgmsg(label.astype(np.int32), '32SC1')
+        # label_msg.header = img_msg.header
+        # self.pub.publish(label_msg)
+        # proba_msg = br.cv2_to_imgmsg(proba_img.astype(np.float32))
+        # proba_msg.header = img_msg.header
+        # self.pub_proba.publish(proba_msg)
 
     def _cb(self, img_msg):
         br = cv_bridge.CvBridge()
@@ -174,7 +196,9 @@ class FCNObjectSegmentation(ConnectionBasedTransport):
         raise ValueError('Unsupported backend: {0}'.format(self.backend))
 
     def _segment_chainer_backend(self, bgr):
-        blob = (bgr - self.mean_bgr).transpose((2, 0, 1))
+        #import ipdb; ipdb.set_trace()
+        blob = bgr
+        blob = blob.reshape(12, 480, 640)
         x_data = np.array([blob], dtype=np.float32)
         if self.gpu != -1:
             x_data = cuda.to_gpu(x_data, device=self.gpu)
@@ -200,6 +224,7 @@ class FCNObjectSegmentation(ConnectionBasedTransport):
 
     def _segment_torch_backend(self, bgr):
         blob = (bgr - self.mean_bgr).transpose((2, 0, 1))
+        blob = blob.reshape(12, 480, 640)
         x_data = np.array([blob], dtype=np.float32)
         x_data = torch.from_numpy(x_data)
         if self.gpu >= 0:
